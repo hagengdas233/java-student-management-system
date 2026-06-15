@@ -2,14 +2,16 @@
 // 点击装订区域中的 <icon src="AllIcons.Actions.Execute"/> 图标。
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
 public class Main{
     public static void main(String[] args) {
         Scanner sc=new Scanner(System.in);
-        ArrayList<Student>a=new ArrayList<>();
-        a.add(new Student("1","ljm",18,65));
-        a.add( new Student("2","王五",20,85));
-        a.add( new Student("3","张三",25,95));
-
+        ArrayList<Student> a = loadStudents();
+        StudentService service =new StudentServiceImpl();
         while(true){
             System.out.println("====== 学生管理系统 ======");
             System.out.println("1.添加学生");
@@ -19,30 +21,38 @@ public class Main{
             System.out.println("5.展示所有学生");
             System.out.println("6.退出系统");
             System.out.println("请输入你的选择");
-            int choice=sc.nextInt();
+            int choice;
+            try{
+                choice=inputChoice(sc);
+            }catch (NumberFormatException e){
+                System.out.println("输入的必须是数字");
+                pause(sc);
+                continue;
+            }
             switch (choice){
                 case 1:
-                    addStudent(a,sc);
+                    service.addStudent(a,sc);
                     pause(sc);
                     break;
                 case 2:
-                    deleteStudent(a,sc);
+                    service.deleteStudent(a,sc);
                     pause(sc);
                     break;
                 case 3:
-                    updateStudent(a,sc);
+                    service.updateStudent(a,sc);
                     pause(sc);
                     break;
                 case 4:
-                    searchStudent(a,sc);
+                    service.searchStudent(a,sc);
                     pause(sc);
                     break;
                 case 5:
-                    showAllStudent(a);
+                    service.showAllStudent(a);
                     pause(sc);
                     break;
                 case 6:
-                    System.out.println("已退出");
+                    saveStudent(a);
+                    System.out.println("数据已保存，系统退出");
                     return;
                 default:
                     System.out.println("输入有误，请重新输入");
@@ -50,115 +60,48 @@ public class Main{
             }
         }
     }
-    public static void addStudent(ArrayList<Student> a, Scanner sc ){
-        System.out.println("请输入学号：");
-        String id=sc.next();
-            if(getindexId(a,id)!=-1){
-                System.out.println("\n==========================");
-                System.out.println("❌ 错误：该学号已存在！添加失败。");
-                System.out.println("==========================\n");
-                return;
-        }
-        System.out.println("请输入姓名：");
-        String name=sc.next();
-        System.out.println("请输入年龄：");
-        int age=sc.nextInt();
-        if(!checkAge(age)){
-            System.out.println("年龄错误");
-            return;
-        }
-        System.out.println("请输入成绩：");
-        int score=sc.nextInt();
-        if(!checkScore(score)){
-            System.out.println("成绩错误");
-            return;
-        }
-        a.add(new Student(id,name,age,score));
-        System.out.println("输入成功");
-    }
-    public static void deleteStudent(ArrayList<Student> a, Scanner sc) {
-        boolean deleteFound=false;
-        System.out.println("请输入要删除的学生学号：");
-        String deleteId=sc.next();
-        int index = getindexId(a, deleteId);
-            if(index!=-1){
-                a.remove(index);
-                System.out.println("删除成功");
-                deleteFound=true;
+
+    public static void saveStudent(ArrayList<Student> a) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("students.txt"))) {
+            for (int i = 0; i < a.size(); i++) {
+                Student s = a.get(i);
+                bw.write(s.getId() + "," + s.getName() + "," + s.getAge() + "," + s.getScore());
+                bw.newLine();
             }
-
-        if(!deleteFound) System.out.println("未找到该学生，删除失败");
-    }
-    public static void updateStudent(ArrayList<Student> a, Scanner sc) {
-        System.out.println("请输入要修改的学生学号：");
-        String updateId=sc.next();
-                int index=getindexId(a,updateId);
-                if(index == -1) {
-                    System.out.println("未找到该学生，修改失败");
-                    return;
-                }
-                System.out.println("请输入新的学号：");
-                String newId=sc.next();
-                int newIndex=getindexId(a,newId);
-                    if(newIndex!=-1&&newIndex!=index){
-                        System.out.println("该学号已存在，修改失败");
-                        return;
-                    }
-                System.out.println("请输入新的姓名：");
-                String newName=sc.next();
-                System.out.println("请输入新的年龄：");
-                int newAge=sc.nextInt();
-                if(!checkAge(newAge)){
-                    System.out.println("年龄错误");
-                    return;
-                }
-                System.out.println("请输入新的成绩：");
-                int newScore=sc.nextInt();
-                if(!checkScore(newScore)){
-                    System.out.println("成绩错误");
-                    return;
-                }
-                a.get(index).setId(newId);
-                a.get(index).setName(newName);
-                a.get(index).setAge(newAge);
-                a.get(index).setScore(newScore);
-                System.out.println("修改成功，修改后的学生信息为：");
-                a.get(index).sayHello();
-
-
-    }
-
-    public static void searchStudent(ArrayList<Student> a, Scanner sc) {
-
-        System.out.println("请输入要查找的学生学号：");
-        String searchId=sc.next();
-        int index=getindexId(a,searchId);
-            if(index==-1){
-                System.out.println("未找到该学生");
-                return;
-            }
-
-        a.get(index).sayHello();
-    }
-
-    public static void showAllStudent(ArrayList<Student> a) {
-        for(int i=0;i<a.size();i++){
-            a.get(i).sayHello();
+        } catch (IOException e) {
+            System.out.println("保存数据失败");
         }
     }
-    public static int getindexId(ArrayList<Student>a,String id){
-        for(int i=0;i<a.size();i++){
-            if(a.get(i).getId().equals(id)){
-                return i;
+
+    public static ArrayList<Student> loadStudents() {
+        ArrayList<Student> a = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader("students.txt"))) {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+
+                String id = parts[0];
+                String name = parts[1];
+                int age = Integer.parseInt(parts[2]);
+                int score = Integer.parseInt(parts[3]);
+
+                a.add(new Student(id, name, age, score));
             }
+        } catch (IOException e) {
+            System.out.println("没有找到历史数据，使用默认数据");
+            a.add(new Student("1", "ljm", 18, 65));
+            a.add(new Student("2", "王五", 20, 85));
+            a.add(new Student("3", "张三", 25, 95));
         }
-        return -1;
+
+        return a;
     }
-    public static boolean checkAge(int age){
-        return age>0;
-    }
-    public static boolean checkScore(int score){
-        return score>=0&&score<=100;
+    public static int inputChoice(Scanner sc){
+        String choicestr=sc.next();
+        int choice=Integer.parseInt(choicestr);
+        return choice;
     }
     public static void pause(Scanner sc) {
         System.out.println("输入任意内容并回车返回菜单...");
