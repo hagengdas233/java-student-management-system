@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class Student {
         static String school="山西大学";
         private String id;
@@ -43,4 +45,23 @@ public class Student {
             System.out.println("学号"+id+"学校"+school+"姓名"+name+"，年龄"+age+"成绩"+score);
         }
 
+    @Override
+    public String toString() {
+        return "学号：" + id + "，姓名：" + name + "，年龄：" + age + "，成绩：" + score;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if(this==obj)return true;
+        if(obj==null)return false;
+        if(!(obj instanceof Student))return false;
+        Student other =(Student) obj;
+        return Objects.equals(other.id,this.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

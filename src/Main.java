@@ -7,10 +7,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.HashMap;
 public class Main{
     public static void main(String[] args) {
         Scanner sc=new Scanner(System.in);
-        ArrayList<Student> a = loadStudents();
+        HashMap<String,Student> a = loadStudents();
         StudentService service =new StudentServiceImpl();
         while(true){
             System.out.println("====== 学生管理系统 ======");
@@ -20,6 +21,13 @@ public class Main{
             System.out.println("4.查询学生");
             System.out.println("5.展示所有学生");
             System.out.println("6.退出系统");
+            System.out.println("7.按成绩从高到低展示学生");
+            System.out.println("8.按学号从高到低展示学生");
+            System.out.println("9.比较两个学生是不是一个人");
+            System.out.println("10.给出成绩最高的学生");
+            System.out.println("11.给出成绩前n高的学生");
+            System.out.println("12.给出所有学生的平均成绩");
+            System.out.println("13.给出学生的及格情况");
             System.out.println("请输入你的选择");
             int choice;
             try{
@@ -54,6 +62,34 @@ public class Main{
                     saveStudent(a);
                     System.out.println("数据已保存，系统退出");
                     return;
+                case 7:
+                    service.showStudentByScoreDesc(a);
+                    pause(sc);
+                    break;
+                case 8:
+                    service.showStudentByIdDesc(a);
+                    pause(sc);
+                    break;
+                case 9:
+                    service.CompareStudents(a,sc);
+                    pause(sc);
+                    break;
+                case 10:
+                    service.maxScore(a);
+                    pause(sc);
+                    break;
+                case 11:
+                    service.topN(a,sc);
+                    pause(sc);
+                    break;
+                case 12:
+                    service.avgScore(a);
+                    pause(sc);
+                    break;
+                case 13:
+                    service.groupByPass(a,sc);
+                    pause(sc);
+                    break;
                 default:
                     System.out.println("输入有误，请重新输入");
                     pause(sc);
@@ -61,10 +97,9 @@ public class Main{
         }
     }
 
-    public static void saveStudent(ArrayList<Student> a) {
+    public static void saveStudent(HashMap<String,Student> a) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("students.txt"))) {
-            for (int i = 0; i < a.size(); i++) {
-                Student s = a.get(i);
+            for (Student s : a.values()) {
                 bw.write(s.getId() + "," + s.getName() + "," + s.getAge() + "," + s.getScore());
                 bw.newLine();
             }
@@ -73,8 +108,8 @@ public class Main{
         }
     }
 
-    public static ArrayList<Student> loadStudents() {
-        ArrayList<Student> a = new ArrayList<>();
+    public static HashMap<String,Student> loadStudents() {
+        HashMap<String,Student>a = new HashMap<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader("students.txt"))) {
             String line;
@@ -87,13 +122,13 @@ public class Main{
                 int age = Integer.parseInt(parts[2]);
                 int score = Integer.parseInt(parts[3]);
 
-                a.add(new Student(id, name, age, score));
+                a.put(id,new Student(id, name, age, score));
             }
-        } catch (IOException e) {
+        } catch (IOException | NumberFormatException | ArrayIndexOutOfBoundsException e) {
             System.out.println("没有找到历史数据，使用默认数据");
-            a.add(new Student("1", "ljm", 18, 65));
-            a.add(new Student("2", "王五", 20, 85));
-            a.add(new Student("3", "张三", 25, 95));
+            a.put("1",new Student("1", "ljm", 18, 65));
+            a.put("2",new Student("2", "王五", 20, 85));
+            a.put("3",new Student("3", "张三", 25, 95));
         }
 
         return a;
