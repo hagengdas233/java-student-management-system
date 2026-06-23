@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ljm.student.mapper.StudentMapper">
+
+    <sql id="studentColumns">
+        id, name, age, score
+    </sql>
+
+    <resultMap id="studentResultMap" type="Student">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="age" column="age"/>
+        <result property="score" column="score"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="studentResultMap">
+        select <include refid="studentColumns"/>
+        from student
+        order by cast(id as unsigned)
+    </select>
+
+    <select id="findById" parameterType="string" resultMap="studentResultMap">
+        select <include refid="studentColumns"/>
+        from student
+        where id = #{id}
+    </select>
+
+    <insert id="addStudent" parameterType="Student">
+        insert into student(id, name, age, score)
+        values(#{id}, #{name}, #{age}, #{score})
+    </insert>
+
+    <delete id="deleteStudent" parameterType="string">
+        delete from student
+        where id=#{id}
+    </delete>
+    
+    <update id="updateStudent" parameterType="Student">
+        update student
+        set name=#{name},
+            age=#{age},
+            score=#{score}
+        where id=#{id}
+    </update>
+
+    <select id="findByPage" resultMap="studentResultMap">
+        select <include refid="studentColumns"/>
+        from student
+        limit #{offset},#{pageSize}
+    </select>
+
+    <select id="findByNameLike" parameterType="string" resultMap="studentResultMap">
+        select <include refid="studentColumns"/>
+        from student
+        where name like concat('%', #{name}, '%')
+    </select>
+
+    <select id="findAllOrderByScoreDesc" resultMap="studentResultMap">
+        select <include refid="studentColumns"/>
+        from student
+        order by score desc
+    </select>
+
+    <select id="countStudent" resultType="int">
+        select count(*)
+        from student
+    </select>
+
+    <select id="avgScore" resultType="double">
+        select avg(score) from student
+    </select>
+
+    <select id="maxScore" resultType="int">
+        select max(score) from student
+    </select>
+
+    <select id="minScore" resultType="int">
+        select min(score) from student
+    </select>
+
+    <select id="countPassStudent" resultType="int">
+        select count(*)
+        from student
+        where score >= 60
+    </select>
+
+    <select id="findByCondition" resultType="Student">
+        <include refid="studentColumns"/>
+        from student
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+
+            <if test="minScore != null">
+                and score &gt;= #{minScore}
+            </if>
+
+            <if test="maxScore != null">
+                and score &lt;= #{maxScore}
+            </if>
+        </where>
+        order by cast(id as unsigned)
+    </select>
+
+    <update id="updateStudentSelective" parameterType="Student">
+        update student
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+
+            <if test="age != null">
+                age = #{age},
+            </if>
+
+            <if test="score != null">
+                score = #{score},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteByIds">
+        delete from student
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="addStudents">
+        insert into student(id, name, age, score)
+        values
+        <foreach collection="students" item="student" separator=",">
+            (#{student.id}, #{student.name}, #{student.age}, #{student.score})
+        </foreach>
+    </insert>
+
+</mapper>
