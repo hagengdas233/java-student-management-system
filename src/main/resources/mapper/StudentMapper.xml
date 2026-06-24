@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ljm.studentspringboot.mapper.StudentMapper">
+
+    <select id="findAll" resultType="Student">
+        select id, name, age, score
+        from student
+        order by cast(id as unsigned)
+    </select>
+
+    <select id="findById" resultType="Student">
+        select id, name, age, score
+        from student
+        where id = #{id}
+    </select>
+
+    <select id="findAllOrderByScoreDesc" resultType="Student">
+        select id, name, age, score
+        from student
+        order by score desc
+    </select>
+
+    <select id="findByPageOrderByScoreDesc" resultType="Student">
+        select id, name, age, score
+        from student
+        order by score desc
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <select id="countByCondition" resultType="long">
+        select count(*)
+        from student
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+
+            <if test="minScore != null">
+                and score &gt;= #{minScore}
+            </if>
+
+            <if test="maxScore != null">
+                and score &lt;= #{maxScore}
+            </if>
+        </where>
+    </select>
+
+    <select id="findByConditionPage" resultType="Student">
+        select id, name, age, score
+        from student
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+
+            <if test="minScore != null">
+                and score &gt;= #{minScore}
+            </if>
+
+            <if test="maxScore != null">
+                and score &lt;= #{maxScore}
+            </if>
+        </where>
+        order by score desc
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <insert id="addStudent">
+        insert into student (id, name, age, score)
+        values (#{id}, #{name}, #{age}, #{score})
+    </insert>
+
+    <update id="updateStudent">
+        update student
+        set name = #{name},
+        age = #{age},
+        score = #{score}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStudent">
+        delete from student
+        where id = #{id}
+    </delete>
+
+    <select id="searchByName" resultType="Student">
+        select id,name,age,score
+        from student
+        where name like concat('%',#{name},'%')
+    </select>
+
+    <select id="filterByScore" resultType="Student">
+        select id,name,age,score
+        from student
+        where score &gt;= #{minScore}
+        and score &lt;= #{maxScore}
+    </select>
+
+    <select id="findByPage" resultType="Student">
+        select id,name,age,score
+        from student
+        limit #{offset},#{pageSize}
+    </select>
+
+    <select id="count" resultType="long">
+        select count(*)
+        from student
+    </select>
+
+    <select id="findByCondition" resultType="Student">
+        select id, name, age, score
+        from student
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+
+            <if test="minScore != null">
+                and score &gt;= #{minScore}
+            </if>
+
+            <if test="maxScore != null">
+                and score &lt;= #{maxScore}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateStudentSelective">
+        update student
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+
+            <if test="age != null">
+                age = #{age},
+            </if>
+
+            <if test="score != null">
+                score = #{score},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBatch">
+        delete from student
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
