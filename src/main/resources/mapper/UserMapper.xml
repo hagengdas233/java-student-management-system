@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ljm.studentspringboot.mapper.UserMapper">
+
+    <select id="findByUsername" resultType="User">
+        select id, username, password, create_time as createTime
+        from `user`
+        where username = #{username}
+    </select>
+
+    <insert id="insert">
+        insert into `user` (username, password)
+        values (#{username}, #{password})
+    </insert>
+
+</mapper>

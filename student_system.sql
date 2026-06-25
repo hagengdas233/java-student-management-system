@@ -4,7 +4,15 @@ COLLATE utf8mb4_unicode_ci;
 
 USE student_system;
 
+DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS student;
+
+CREATE TABLE `user` (
+                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                         username VARCHAR(50) NOT NULL UNIQUE,
+                         password VARCHAR(100) NOT NULL,
+                         create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE student (
                          id VARCHAR(20) PRIMARY KEY COMMENT '学号',
