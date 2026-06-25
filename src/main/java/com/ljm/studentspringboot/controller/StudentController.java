@@ -2,11 +2,19 @@ package com.ljm.studentspringboot.controller;
 
 import com.ljm.studentspringboot.entity.Student;
 import com.ljm.studentspringboot.entity.Result;
+import com.ljm.studentspringboot.entity.PageResult;
+import com.ljm.studentspringboot.dto.StudentAddDTO;
+import com.ljm.studentspringboot.dto.StudentUpdateDTO;
+import com.ljm.studentspringboot.dto.StudentQueryDTO;
+import com.ljm.studentspringboot.vo.StudentVO;
 import com.ljm.studentspringboot.service.StudentService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.List;import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;import io.swagger.v3.oas.annotations.Parameter;
 
+@Tag(name = "学生管理接口")
 @RestController
 public class StudentController {
 
@@ -16,117 +24,60 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @GetMapping("/student")
-    public Student getStudent() {
-        return new Student("1", "ljm", 18, 90);
-    }
 
+    @Operation(summary = "查询全部学生")
     @GetMapping("/students")
-    public Result getStudents() {
+    public Result<List<StudentVO>> getStudents() {
         return Result.success(studentService.findAll());
     }
 
+    @Operation(summary = "根据ID查询学生")
     @GetMapping("/students/{id}")
-    public Result getStudentById(@PathVariable String id) {
+    public Result<StudentVO> getStudentById(
+            @Parameter(description = "学生学号", example = "1001")
+            @PathVariable String id) {
         return Result.success(studentService.findById(id));
     }
 
-    @GetMapping("/students/order/score")
-    public Result findAllOrderByScoreDesc() {
-        return Result.success(studentService.findAllOrderByScoreDesc());
+
+    @Operation(summary = "条件分页查询学生")
+    @GetMapping("/students/page/query")
+    public Result<PageResult<StudentVO>> pageQuery(@Valid StudentQueryDTO queryDTO) {
+        PageResult<StudentVO> pageResult = studentService.pageQuery(queryDTO);
+        return Result.success(pageResult);
     }
 
-    @GetMapping("/students/page/order")
-    public Result findByPageOrderByScoreDesc(@RequestParam Integer page,
-                                             @RequestParam Integer pageSize) {
-        return Result.success(studentService.findByPageOrderByScoreDesc(page, pageSize));
-    }
 
-    @GetMapping("/students/page/condition")
-    public Result findByConditionPage(@RequestParam(required = false) String name,
-                                      @RequestParam(required = false) Integer minScore,
-                                      @RequestParam(required = false) Integer maxScore,
-                                      @RequestParam Integer page,
-                                      @RequestParam Integer pageSize) {
-        return Result.success(studentService.findByConditionPage(name, minScore, maxScore, page, pageSize));
-    }
-
-    @GetMapping("/students/search")
-    public Result searchStudents(@RequestParam String name) {
-        return Result.success(studentService.searchByName(name));
-    }
-
-    @GetMapping("/students/filter")
-    public Result filterStudents(@RequestParam Integer minScore,
-                                 @RequestParam Integer maxScore) {
-        return Result.success(studentService.filterByScore(minScore, maxScore));
-    }
-
+    @Operation(summary = "添加学生")
     @PostMapping("/students")
-    public Result addStudent(@RequestBody Student student) {
-        int rows = studentService.addStudent(student);
-
-        if (rows > 0) {
-            return Result.success();
-        } else {
-            return Result.error("添加失败");
-        }
+    public Result<Void> addStudent(@RequestBody @Valid StudentAddDTO studentAddDTO) {
+        studentService.addStudent(studentAddDTO);
+        return Result.success();
     }
 
-    @PutMapping("/students")
-    public Result updateStudent(@RequestBody Student student) {
-        int rows = studentService.updateStudent(student);
-
-        if (rows > 0) {
-            return Result.success();
-        } else {
-            return Result.error("修改失败，学生不存在");
-        }
+    @Operation(summary = "修改学生")
+    @PutMapping("/students/{id}")
+    public Result<Void> updateStudent(@PathVariable String id,
+                                      @RequestBody @Valid StudentUpdateDTO studentUpdateDTO) {
+        studentService.updateStudent(id, studentUpdateDTO);
+        return Result.success();
     }
 
+    @Operation(summary = "删除学生")
     @DeleteMapping("/students/{id}")
-    public Result deleteStudent(@PathVariable String id) {
-        int rows = studentService.deleteStudent(id);
-
-        if (rows > 0) {
-            return Result.success();
-        } else {
-            return Result.error("删除失败，学生不存在");
-        }
+    public Result<Void> deleteStudent(
+            @Parameter(description = "学生学号", example = "1001")
+            @PathVariable String id) {
+        studentService.deleteStudent(id);
+        return Result.success();
     }
 
-    @GetMapping("/students/page")
-    public Result findByPage(@RequestParam Integer page,
-                             @RequestParam Integer pageSize) {
-        return Result.success(studentService.findByPage(page, pageSize));
-    }
-
-    @GetMapping("/students/condition")
-    public Result findByCondition(@RequestParam(required = false) String name,
-                                  @RequestParam(required = false) Integer minScore,
-                                  @RequestParam(required = false) Integer maxScore) {
-        return Result.success(studentService.findByCondition(name, minScore, maxScore));
-    }
-
-    @PatchMapping("/students")
-    public Result updateStudentSelective(@RequestBody Student student) {
-        int rows = studentService.updateStudentSelective(student);
-
-        if (rows > 0) {
-            return Result.success();
-        } else {
-            return Result.error("修改失败，学生不存在");
-        }
-    }
-
+    @Operation(summary = "批量删除学生")
     @DeleteMapping("/students/batch")
-    public Result deleteBatch(@RequestParam List<String> ids) {
-        int rows = studentService.deleteBatch(ids);
-
-        if (rows > 0) {
-            return Result.success();
-        } else {
-            return Result.error("删除失败，学生不存在");
-        }
+    public Result<Void> deleteBatch(
+            @Parameter(description = "学生学号列表", example = "1,2,3")
+            @RequestParam List<String> ids) {
+        studentService.deleteBatch(ids);
+        return Result.success();
     }
 }

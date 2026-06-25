@@ -37,3 +37,45 @@ GET http://localhost:8080/students/page?page=1&pageSize=3
 
 ### 条件分页查询
 GET http://localhost:8080/students/page/condition?page=1&pageSize=3&name=张&minScore=60&maxScore=100
+###
+POST http://localhost:8080/students
+Content-Type: application/json
+
+{
+  "id": "",
+  "name": "",
+  "age": -1,
+  "score": 999
+}
+###
+PUT http://localhost:8080/students/1
+Content-Type: application/json
+
+{
+"name": "",
+"age": 0,
+"score": 120
+}
+###
+GET http://localhost:8080/students/page/query?pageNum=0&pageSize=200
+
+### 条件分页：minScore 大于 maxScore 错误测试
+GET http://localhost:8080/students/page/query?minScore=90&maxScore=60&pageNum=1&pageSize=10
+
+### 删除不存在的学生
+DELETE http://localhost:8080/students/999
+
+### 批量删除
+DELETE http://localhost:8080/students/batch?ids=2&ids=3
+###
+GET http://localhost:8080/students/page/query?pageNum=1&pageSize=5
+###
+POST http://localhost:8080/students
+Content-Type: application/json
+
+{
+  "id": "100",
+  "name": "Lombok测试",
+  "age": 20,
+  "score": 88
+}

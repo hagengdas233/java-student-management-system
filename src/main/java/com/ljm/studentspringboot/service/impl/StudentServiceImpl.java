@@ -1,34 +1,35 @@
 package com.ljm.studentspringboot.service.impl;
 
+import com.ljm.studentspringboot.dto.StudentAddDTO;
+import com.ljm.studentspringboot.dto.StudentQueryDTO;
+import com.ljm.studentspringboot.dto.StudentUpdateDTO;
 import com.ljm.studentspringboot.entity.Student;
 import com.ljm.studentspringboot.mapper.StudentMapper;
 import com.ljm.studentspringboot.service.StudentService;
+import com.ljm.studentspringboot.vo.StudentVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import com.ljm.studentspringboot.exception.BusinessException;import com.ljm.studentspringboot.entity.PageResult;
+import com.ljm.studentspringboot.exception.BusinessException;import com.ljm.studentspringboot.entity.PageResult;import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentServiceImpl implements StudentService {
 
     private final StudentMapper studentMapper;
 
-    private void checkStudent(Student student) {
-        if (student.getId() == null || student.getId().isEmpty()) {
-            throw new BusinessException("学号不能为空");
-        }
+    private StudentVO toVO(Student student) {
+        StudentVO vo = new StudentVO();
+        vo.setId(student.getId());
+        vo.setName(student.getName());
+        vo.setAge(student.getAge());
+        vo.setScore(student.getScore());
+        return vo;
+    }
 
-        if (student.getName() == null || student.getName().isEmpty()) {
-            throw new BusinessException("姓名不能为空");
-        }
-
-        if (student.getAge() == null || student.getAge() <= 0) {
-            throw new BusinessException("年龄必须大于0");
-        }
-
-        if (student.getScore() == null || student.getScore() < 0 || student.getScore() > 100) {
-            throw new BusinessException("成绩必须在0到100之间");
-        }
+    private List<StudentVO> toVOList(List<Student> students) {
+        return students.stream()
+                .map(this::toVO)
+                .toList();
     }
 
     public StudentServiceImpl(StudentMapper studentMapper) {
@@ -36,161 +37,109 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<Student> findAll() {
-        return studentMapper.findAll();
+    @Transactional(readOnly = true)
+    public List<StudentVO> findAll() {
+        List<Student> students = studentMapper.findAll();
+        return toVOList(students);
     }
 
     @Override
-    public Student findById(String id) {
-        return studentMapper.findById(id);
+    @Transactional(readOnly = true)
+    public StudentVO findById(String id) {
+        Student student = studentMapper.findById(id);
+
+        if (student == null) {
+            throw new BusinessException("学生不存在");
+        }
+
+        return toVO(student);
     }
 
+    @Transactional
     @Override
-    public List<Student> findAllOrderByScoreDesc() {
-        return studentMapper.findAllOrderByScoreDesc();
+    public void deleteStudent(String id) {
+        int rows = studentMapper.deleteStudent(id);
+
+        if (rows <= 0) {
+            throw new BusinessException("删除失败，学生不存在");
+        }
     }
 
+    @Transactional
     @Override
-    public PageResult findByPageOrderByScoreDesc(Integer page, Integer pageSize) {
-        if (page == null || page <= 0) {
-            throw new BusinessException("页码必须大于0");
-        }
-
-        if (pageSize == null || pageSize <= 0) {
-            throw new BusinessException("每页条数必须大于0");
-        }
-
-        int offset = (page - 1) * pageSize;
-
-        Long total = studentMapper.count();
-        List<Student> rows = studentMapper.findByPageOrderByScoreDesc(offset, pageSize);
-
-        return new PageResult(total, rows);
-    }
-
-    @Override
-    public PageResult findByConditionPage(String name,
-                                          Integer minScore,
-                                          Integer maxScore,
-                                          Integer page,
-                                          Integer pageSize) {
-        if (page == null || page <= 0) {
-            throw new BusinessException("页码必须大于0");
-        }
-
-        if (pageSize == null || pageSize <= 0) {
-            throw new BusinessException("每页条数必须大于0");
-        }
-
-        if (minScore != null && (minScore < 0 || minScore > 100)) {
-            throw new BusinessException("最低成绩必须在0到100之间");
-        }
-
-        if (maxScore != null && (maxScore < 0 || maxScore > 100)) {
-            throw new BusinessException("最高成绩必须在0到100之间");
-        }
-
-        if (minScore != null && maxScore != null && minScore > maxScore) {
-            throw new BusinessException("最低成绩不能大于最高成绩");
-        }
-
-        int offset = (page - 1) * pageSize;
-
-        Long total = studentMapper.countByCondition(name, minScore, maxScore);
-        List<Student> rows = studentMapper.findByConditionPage(name, minScore, maxScore, offset, pageSize);
-
-        return new PageResult(total, rows);
-    }
-
-    @Override
-    public List<Student> searchByName(String name) {
-        return studentMapper.searchByName(name);
-    }
-
-    @Override
-    public List<Student> filterByScore(Integer minScore, Integer maxScore) {
-        return studentMapper.filterByScore(minScore, maxScore);
-    }
-
-    @Override
-    public int addStudent(Student student) {
-        checkStudent(student);
-        return studentMapper.addStudent(student);
-    }
-
-    @Override
-    public int updateStudent(Student student) {
-        checkStudent(student);
-        return studentMapper.updateStudent(student);
-    }
-
-    @Override
-    public int deleteStudent(String id) {
-        return studentMapper.deleteStudent(id);
-    }
-
-    @Override
-    public PageResult findByPage(Integer page, Integer pageSize) {
-        if (page == null || page <= 0) {
-            throw new BusinessException("页码必须大于0");
-        }
-
-        if (pageSize == null || pageSize <= 0) {
-            throw new BusinessException("每页条数必须大于0");
-        }
-
-        int offset = (page - 1) * pageSize;
-
-        Long total = studentMapper.count();
-        List<Student> rows = studentMapper.findByPage(offset, pageSize);
-
-        return new PageResult(total, rows);
-    }
-
-    @Override
-    public List<Student> findByCondition(String name, Integer minScore, Integer maxScore) {
-        if (minScore != null && (minScore < 0 || minScore > 100)) {
-            throw new BusinessException("最低成绩必须在0到100之间");
-        }
-
-        if (maxScore != null && (maxScore < 0 || maxScore > 100)) {
-            throw new BusinessException("最高成绩必须在0到100之间");
-        }
-
-        if (minScore != null && maxScore != null && minScore > maxScore) {
-            throw new BusinessException("最低成绩不能大于最高成绩");
-        }
-
-        return studentMapper.findByCondition(name, minScore, maxScore);
-    }
-
-    @Override
-    public int updateStudentSelective(Student student) {
-        if (student.getId() == null || student.getId().isEmpty()) {
-            throw new BusinessException("学号不能为空");
-        }
-
-        if (student.getName() != null && student.getName().isEmpty()) {
-            throw new BusinessException("姓名不能为空");
-        }
-
-        if (student.getAge() != null && student.getAge() <= 0) {
-            throw new BusinessException("年龄必须大于0");
-        }
-
-        if (student.getScore() != null && (student.getScore() < 0 || student.getScore() > 100)) {
-            throw new BusinessException("成绩必须在0到100之间");
-        }
-
-        return studentMapper.updateStudentSelective(student);
-    }
-
-    @Override
-    public int deleteBatch(List<String> ids) {
+    public void deleteBatch(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             throw new BusinessException("请选择要删除的学生");
         }
 
-        return studentMapper.deleteBatch(ids);
+        int rows = studentMapper.deleteBatch(ids);
+
+        if (rows <= 0) {
+            throw new BusinessException("删除失败，学生不存在");
+        }
+    }
+
+    @Transactional
+    @Override
+    public void addStudent(StudentAddDTO studentAddDTO) {
+        Student student = new Student();
+
+        student.setId(studentAddDTO.getId());
+        student.setName(studentAddDTO.getName());
+        student.setAge(studentAddDTO.getAge());
+        student.setScore(studentAddDTO.getScore());
+
+        int rows = studentMapper.addStudent(student);
+
+        if (rows <= 0) {
+            throw new BusinessException("添加学生失败");
+        }
+    }
+
+    @Transactional
+    @Override
+    public void updateStudent(String id, StudentUpdateDTO studentUpdateDTO) {
+        Student student = new Student();
+
+        student.setId(id);
+        student.setName(studentUpdateDTO.getName());
+        student.setAge(studentUpdateDTO.getAge());
+        student.setScore(studentUpdateDTO.getScore());
+
+        int rows = studentMapper.updateStudent(student);
+
+        if (rows <= 0) {
+            throw new BusinessException("修改失败，学生不存在");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<StudentVO> pageQuery(StudentQueryDTO queryDTO) {
+        if (queryDTO.getMinScore() != null
+                && queryDTO.getMaxScore() != null
+                && queryDTO.getMinScore() > queryDTO.getMaxScore()) {
+            throw new BusinessException("最低成绩不能大于最高成绩");
+        }
+
+        int offset = (queryDTO.getPageNum() - 1) * queryDTO.getPageSize();
+
+        List<Student> students = studentMapper.findByConditionPage(
+                queryDTO.getName(),
+                queryDTO.getMinScore(),
+                queryDTO.getMaxScore(),
+                offset,
+                queryDTO.getPageSize()
+        );
+
+        Long total = studentMapper.countByCondition(
+                queryDTO.getName(),
+                queryDTO.getMinScore(),
+                queryDTO.getMaxScore()
+        );
+
+        List<StudentVO> voList = toVOList(students);
+
+        return new PageResult<>(total, voList);
     }
 }

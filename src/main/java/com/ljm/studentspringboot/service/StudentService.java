@@ -1,41 +1,26 @@
 package com.ljm.studentspringboot.service;
 
-import com.ljm.studentspringboot.entity.Student;
 import com.ljm.studentspringboot.entity.PageResult;
+import com.ljm.studentspringboot.dto.StudentAddDTO;
+import com.ljm.studentspringboot.dto.StudentUpdateDTO;
+import com.ljm.studentspringboot.dto.StudentQueryDTO;
+import com.ljm.studentspringboot.vo.StudentVO;
 
 import java.util.List;
 
 public interface StudentService {
 
-    List<Student> findAll();
+    List<StudentVO> findAll();
 
-    Student findById(String id);
+    StudentVO findById(String id);
 
-    List<Student> findAllOrderByScoreDesc();
+    void deleteStudent(String id);
 
-    PageResult findByPageOrderByScoreDesc(Integer page, Integer pageSize);
+    void deleteBatch(List<String> ids);
 
-    PageResult findByConditionPage(String name,
-                                   Integer minScore,
-                                   Integer maxScore,
-                                   Integer page,
-                                   Integer pageSize);
+    PageResult<StudentVO> pageQuery(StudentQueryDTO queryDTO);
 
-    List<Student> searchByName(String name);
+    void addStudent(StudentAddDTO studentAddDTO);
 
-    List<Student> filterByScore(Integer minScore, Integer maxScore);
-
-    int addStudent(Student student);
-
-    int updateStudent(Student student);
-
-    int deleteStudent(String id);
-
-    PageResult findByPage(Integer page, Integer pageSize);
-
-    List<Student> findByCondition(String name, Integer minScore, Integer maxScore);
-
-    int updateStudentSelective(Student student);
-
-    int deleteBatch(List<String> ids);
+    void updateStudent(String id, StudentUpdateDTO studentUpdateDTO);
 }

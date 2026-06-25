@@ -1,33 +1,15 @@
 package com.ljm.studentspringboot.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
-public class PageResult {
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PageResult<T> {
     private Long total;
-    private List<Student> rows;
-
-    public PageResult() {
-    }
-
-    public PageResult(Long total, List<Student> rows) {
-        this.total = total;
-        this.rows = rows;
-    }
-
-    public Long getTotal() {
-        return total;
-    }
-
-    public void setTotal(Long total) {
-        this.total = total;
-    }
-
-    public List<Student> getRows() {
-        return rows;
-    }
-
-    public void setRows(List<Student> rows) {
-        this.rows = rows;
-    }
+    private List<T> records;
 }
