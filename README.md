@@ -4,7 +4,7 @@
 
 本项目是一个基于 Spring Boot + MyBatis + MySQL 的学生管理系统，主要用于练习 Java 后端项目开发中的分层架构、RESTful 接口设计、统一返回、参数校验、全局异常处理、分页查询、事务管理和接口文档。
 
-项目从基础 CRUD 出发，逐步重构为较规范的单体后端项目。
+项目从基础 CRUD 出发，逐步重构为较规范的单体后端项目。目前 auth-version 分支已支持用户注册、用户登录和 JWT 鉴权，学生相关接口需要登录后携带 token 才能访问。
 
 ## 技术栈
 
@@ -13,9 +13,12 @@
 - MyBatis
 - MySQL
 - Maven
-- Lombok
 - Spring Validation
+- Lombok
 - Swagger / OpenAPI
+- BCrypt
+- JWT
+- ThreadLocal
 - Git / GitHub
 
 ## 项目功能
@@ -34,10 +37,12 @@
 - 统一返回结果
 - Swagger 接口文档
 - 用户注册
+- BCrypt 密码加密存储
 - 用户登录
-- 密码加密
-- JWT 登录认证
-- 学生接口鉴权保护
+- 登录成功返回 JWT token
+- JWT 拦截器保护学生接口
+- 当前登录用户查询 `/users/me`
+- UserContext 保存当前请求用户信息
 
 ## 项目结构
 
@@ -59,10 +64,12 @@ src/main/java/com/ljm/studentspringboot
 ## auth-version 新增内容
 
 - 用户注册接口
-- BCrypt 密码加密
+- BCrypt 密码加密存储
 - 用户登录接口
 - JWT token 生成
 - JWT 拦截器鉴权
+- UserContext 当前用户上下文
+- `/users/me` 当前登录用户查询接口
 - 使用 `Authorization: Bearer token字符串` 访问受保护接口
 - 学生接口 `/students/**` 需要登录后携带 token 才能访问
 - `/users/register` 和 `/users/login` 放行
@@ -71,6 +78,7 @@ src/main/java/com/ljm/studentspringboot
 
 - `POST /users/register` 用户注册
 - `POST /users/login` 用户登录
+- `GET /users/me` 查询当前登录用户，需要携带 token
 - `GET /students` 查询全部学生，需要携带 token
 - `GET /students/{id}` 根据学号查询学生，需要携带 token
 - `GET /students/page/query` 条件分页查询学生，需要携带 token
@@ -88,3 +96,33 @@ Authorization: Bearer token字符串
 ```
 
 当前 JWT 拦截器只保护 `/students/**` 接口；注册接口 `/users/register` 和登录接口 `/users/login` 不需要 token。
+
+## 认证流程说明
+
+- 注册时先检查用户名是否重复，用户名可用时使用 BCrypt 加密密码后存储。
+- 登录时根据用户名查询用户，并使用 `passwordEncoder.matches` 校验明文密码和数据库中的 BCrypt 密文。
+- 登录成功后使用 `JwtUtil` 生成 JWT token。
+- 访问 `/students/**` 时需要携带 `Authorization: Bearer token` 请求头。
+- `JwtInterceptor` 负责校验 token 是否有效。
+- token 校验通过后，`JwtInterceptor` 会将 `userId`、`username` 保存到 `UserContext`。
+- 请求结束后清理 `UserContext`，避免线程复用导致用户信息残留。
+
+## 请求头示例
+
+```http
+Authorization: Bearer your_token
+```
+
+## 项目亮点
+
+- DTO / VO 分层
+- `Result<T>` 统一返回
+- `PageResult<T>` 分页封装
+- `@Valid` 参数校验
+- `GlobalExceptionHandler` 全局异常处理
+- `BusinessException` 业务异常
+- `@Transactional` 事务管理
+- BCrypt 密码加密
+- JWT + 拦截器鉴权
+- ThreadLocal 当前用户上下文
+- Swagger 接口文档
