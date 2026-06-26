@@ -6,6 +6,7 @@ import com.ljm.studentspringboot.dto.StudentUpdateDTO;
 import com.ljm.studentspringboot.entity.Student;
 import com.ljm.studentspringboot.mapper.StudentMapper;
 import com.ljm.studentspringboot.service.StudentService;
+import com.ljm.studentspringboot.util.UserContext;
 import com.ljm.studentspringboot.vo.StudentVO;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,8 @@ public class StudentServiceImpl implements StudentService {
         vo.setName(student.getName());
         vo.setAge(student.getAge());
         vo.setScore(student.getScore());
+        vo.setCreateUserId(student.getCreateUserId());
+        vo.setCreateUsername(student.getCreateUsername());
         return vo;
     }
 
@@ -88,6 +91,8 @@ public class StudentServiceImpl implements StudentService {
         student.setName(studentAddDTO.getName());
         student.setAge(studentAddDTO.getAge());
         student.setScore(studentAddDTO.getScore());
+        student.setCreateUserId(UserContext.getUserId());
+        student.setCreateUsername(UserContext.getUsername());
 
         int rows = studentMapper.addStudent(student);
 

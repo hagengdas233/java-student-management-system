@@ -18,7 +18,9 @@ CREATE TABLE student (
                          id VARCHAR(20) PRIMARY KEY COMMENT '学号',
                          name VARCHAR(50) NOT NULL COMMENT '姓名',
                          age INT NOT NULL COMMENT '年龄',
-                         score INT NOT NULL COMMENT '成绩'
+                         score INT NOT NULL COMMENT '成绩',
+                         create_user_id BIGINT COMMENT '创建人ID',
+                         create_username VARCHAR(50) COMMENT '创建人用户名'
 );
 
 INSERT INTO student (id, name, age, score) VALUES

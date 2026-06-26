@@ -43,6 +43,8 @@
 - JWT 拦截器保护学生接口
 - 当前登录用户查询 `/users/me`
 - UserContext 保存当前请求用户信息
+- 添加学生时自动记录创建人
+- 查询学生时返回创建人信息
 
 ## 项目结构
 
@@ -70,6 +72,8 @@ src/main/java/com/ljm/studentspringboot
 - JWT 拦截器鉴权
 - UserContext 当前用户上下文
 - `/users/me` 当前登录用户查询接口
+- 添加学生时自动记录创建人
+- 查询学生时返回 `createUserId` 和 `createUsername`
 - 使用 `Authorization: Bearer token字符串` 访问受保护接口
 - 学生接口 `/students/**` 需要登录后携带 token 才能访问
 - `/users/register` 和 `/users/login` 放行
@@ -82,7 +86,7 @@ src/main/java/com/ljm/studentspringboot
 - `GET /students` 查询全部学生，需要携带 token
 - `GET /students/{id}` 根据学号查询学生，需要携带 token
 - `GET /students/page/query` 条件分页查询学生，需要携带 token
-- `POST /students` 添加学生，需要携带 token
+- `POST /students` 添加学生，需要携带 token，后端会自动记录创建人
 - `PUT /students/{id}` 修改学生，需要携带 token
 - `DELETE /students/{id}` 删除学生，需要携带 token
 - `DELETE /students/batch` 批量删除学生，需要携带 token
@@ -105,6 +109,7 @@ Authorization: Bearer token字符串
 - 访问 `/students/**` 时需要携带 `Authorization: Bearer token` 请求头。
 - `JwtInterceptor` 负责校验 token 是否有效。
 - token 校验通过后，`JwtInterceptor` 会将 `userId`、`username` 保存到 `UserContext`。
+- `StudentServiceImpl` 添加学生时从 `UserContext` 读取当前登录用户，并写入学生创建人字段。
 - 请求结束后清理 `UserContext`，避免线程复用导致用户信息残留。
 
 ## 请求头示例
@@ -112,6 +117,32 @@ Authorization: Bearer token字符串
 ```http
 Authorization: Bearer your_token
 ```
+
+## 添加学生接口示例
+
+前端添加学生时不需要传 `createUserId` 和 `createUsername`，这两个字段由后端从 token 中解析当前登录用户后自动写入。
+
+```http
+POST /students
+Authorization: Bearer your_token
+Content-Type: application/json
+
+{
+  "id": "200",
+  "name": "创建人测试",
+  "age": 20,
+  "score": 88
+}
+```
+
+## student 表结构补充
+
+`auth-version` 中的 `student` 表包含创建人记录字段：
+
+- `create_user_id BIGINT COMMENT '创建人ID'`
+- `create_username VARCHAR(50) COMMENT '创建人用户名'`
+
+查询学生时会返回对应的 `createUserId` 和 `createUsername`。
 
 ## 项目亮点
 
@@ -125,4 +156,6 @@ Authorization: Bearer your_token
 - BCrypt 密码加密
 - JWT + 拦截器鉴权
 - ThreadLocal 当前用户上下文
+- JWT + UserContext 当前登录用户识别
+- 添加学生自动记录操作用户
 - Swagger 接口文档

@@ -12,4 +12,6 @@ public class Student {
     private String name;
     private Integer age;
     private Integer score;
+    private Long createUserId;
+    private String createUsername;
 }

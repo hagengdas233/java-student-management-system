@@ -6,13 +6,17 @@
 <mapper namespace="com.ljm.studentspringboot.mapper.StudentMapper">
 
     <select id="findAll" resultType="Student">
-        select id, name, age, score
+        select id, name, age, score,
+               create_user_id as createUserId,
+               create_username as createUsername
         from student
         order by cast(id as unsigned)
     </select>
 
     <select id="findById" resultType="Student">
-        select id, name, age, score
+        select id, name, age, score,
+               create_user_id as createUserId,
+               create_username as createUsername
         from student
         where id = #{id}
     </select>
@@ -36,7 +40,9 @@
     </select>
 
     <select id="findByConditionPage" resultType="Student">
-        select id, name, age, score
+        select id, name, age, score,
+               create_user_id as createUserId,
+               create_username as createUsername
         from student
         <where>
             <if test="name != null and name != ''">
@@ -56,8 +62,8 @@
     </select>
 
     <insert id="addStudent">
-        insert into student (id, name, age, score)
-        values (#{id}, #{name}, #{age}, #{score})
+        insert into student (id, name, age, score, create_user_id, create_username)
+        values (#{id}, #{name}, #{age}, #{score}, #{createUserId}, #{createUsername})
     </insert>
 
     <update id="updateStudent">

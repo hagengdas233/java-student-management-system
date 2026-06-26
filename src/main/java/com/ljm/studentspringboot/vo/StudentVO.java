@@ -1,10 +1,19 @@
 package com.ljm.studentspringboot.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 @Data
 @Schema(description = "学生返回数据")
+@JsonPropertyOrder({
+        "id",
+        "name",
+        "age",
+        "score",
+        "createUserId",
+        "createUsername"
+})
 public class StudentVO {
 
     @Schema(description = "学号", example = "1001")
@@ -18,4 +27,10 @@ public class StudentVO {
 
     @Schema(description = "成绩", example = "90")
     private Integer score;
+
+    @Schema(description = "创建人ID", example = "1")
+    private Long createUserId;
+
+    @Schema(description = "创建人用户名", example = "admin")
+    private String createUsername;
 }
