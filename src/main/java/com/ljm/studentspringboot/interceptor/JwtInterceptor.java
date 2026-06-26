@@ -3,6 +3,9 @@ package com.ljm.studentspringboot.interceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ljm.studentspringboot.entity.Result;
 import com.ljm.studentspringboot.util.JwtUtil;
+import com.ljm.studentspringboot.util.UserContext;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +27,7 @@ public class JwtInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws IOException {
+        UserContext.clear();
         String authorization = request.getHeader(AUTHORIZATION_HEADER);
         if (authorization == null || authorization.isBlank()) {
             writeError(response, "未登录，请先登录");
@@ -42,12 +46,29 @@ public class JwtInterceptor implements HandlerInterceptor {
         }
 
         try {
-            JwtUtil.validateToken(token);
+            Claims claims = JwtUtil.parseToken(token);
+            UserContext.setUser(getUserId(claims), claims.get("username", String.class));
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (ExpiredJwtException e) {
             writeError(response, "登录已过期，请重新登录");
             return false;
+        } catch (JwtException | IllegalArgumentException e) {
+            writeError(response, "token无效，请重新登录");
+            return false;
         }
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        UserContext.clear();
+    }
+
+    private Long getUserId(Claims claims) {
+        Object userId = claims.get("userId");
+        if (userId instanceof Number number) {
+            return number.longValue();
+        }
+        return Long.valueOf(userId.toString());
     }
 
     private void writeError(HttpServletResponse response, String message) throws IOException {

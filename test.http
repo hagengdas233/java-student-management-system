@@ -1,15 +1,9 @@
-### 不带 token 查询学生
-GET http://localhost:8080/students
 
-### token 格式错误
-GET http://localhost:8080/students
-Authorization: abc
 
-### 错误 token
-GET http://localhost:8080/students
-Authorization: Bearer abc.def.ghi
+### 不带 token 查询当前用户
+GET http://localhost:8080/users/me
 
-### 登录接口放行
+### 登录获取 token
 POST http://localhost:8080/users/login
 Content-Type: application/json
 
@@ -18,6 +12,6 @@ Content-Type: application/json
   "password": "123456"
 }
 
-### 错误 token
-GET http://localhost:8080/students
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODIzODMzMDYsImV4cCI6MTc4MjQ2OTcwNn0.zs8cEw3R3T484RoNjk1-SoTKChMoyKtyRH8sWymd8Vo
+### 查询当前登录用户
+GET http://localhost:8080/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTQ3ODIsImV4cCI6MTc4MjU0MTE4Mn0.oroA1fwfBILyZgcsxQqRPrvlhqx_3qfZDBnhK9jSbXw
