@@ -46,6 +46,9 @@
 - 添加学生时自动记录创建人
 - 查询学生时返回创建人信息
 - 查询当前用户创建的学生
+- 当前登录用户只能修改自己创建的学生
+- 当前登录用户只能删除自己创建的学生
+- 修改或删除别人创建的学生时返回 `无权限操作该学生`
 
 ## 项目结构
 
@@ -76,6 +79,7 @@ src/main/java/com/ljm/studentspringboot
 - 添加学生时自动记录创建人
 - 查询学生时返回 `createUserId` 和 `createUsername`
 - `GET /students/my` 查询当前用户创建的学生
+- 修改/删除学生前校验当前用户是否为创建人
 - 使用 `Authorization: Bearer token字符串` 访问受保护接口
 - 学生接口 `/students/**` 需要登录后携带 token 才能访问
 - `/users/register` 和 `/users/login` 放行
@@ -90,8 +94,8 @@ src/main/java/com/ljm/studentspringboot
 - `GET /students/{id}` 根据学号查询学生，需要携带 token
 - `GET /students/page/query` 条件分页查询学生，需要携带 token
 - `POST /students` 添加学生，需要携带 token，后端会自动记录创建人
-- `PUT /students/{id}` 修改学生，需要携带 token
-- `DELETE /students/{id}` 删除学生，需要携带 token
+- `PUT /students/{id}` 修改学生，需要 token，且只能修改自己创建的学生
+- `DELETE /students/{id}` 删除学生，需要 token，且只能删除自己创建的学生
 - `DELETE /students/batch` 批量删除学生，需要携带 token
 
 ## 认证说明
@@ -115,6 +119,18 @@ Authorization: Bearer token字符串
 - `StudentServiceImpl` 添加学生时从 `UserContext` 读取当前登录用户，并写入学生创建人字段。
 - 查询当前用户创建的学生时，后端从 `UserContext` 获取当前登录用户 id，根据 `student.create_user_id` 查询数据。
 - 请求结束后清理 `UserContext`，避免线程复用导致用户信息残留。
+
+## 认证和授权
+
+- 认证：判断用户是否登录，例如是否携带合法的 JWT token。
+- 授权：判断当前用户是否有权限操作某个学生，例如只能修改或删除自己创建的学生。
+
+学生修改和删除的授权逻辑：
+
+- `JwtInterceptor` 解析 token 后把 `userId`、`username` 保存到 `UserContext`。
+- `StudentServiceImpl` 在修改/删除学生前，会先根据学生 id 查询学生。
+- 判断 `student.createUserId` 是否等于 `UserContext.getUserId()`。
+- 如果不相等，抛出 `BusinessException("无权限操作该学生")`。
 
 ## 请求头示例
 
@@ -173,4 +189,6 @@ Authorization: Bearer your_token
 - ThreadLocal 当前用户上下文
 - JWT + UserContext 当前登录用户识别
 - 添加学生自动记录操作用户
+- 基于 UserContext 实现学生数据权限控制
+- 当前用户只能操作自己创建的数据
 - Swagger 接口文档

@@ -7,22 +7,33 @@ Content-Type: application/json
   "password": "123456"
 }
 
-### 带 token 添加学生
-POST http://localhost:8080/students
+
+### 当前用户修改自己创建的学生，应成功
+PUT http://localhost:8080/students/300
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTkyMjMsImV4cCI6MTc4MjU0NTYyM30.5BYcEuBwfc5lp7yuuJno8XX1ICypwYkobPxmmZiWTd4
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjMwNjMsImV4cCI6MTc4MjU0OTQ2M30.3FOn5UIinrU3B7khQEZXhy1lYd7jySbghxcyENYMi2Q
 
 {
-  "id": "300",
-  "name": "创建人测试2",
-  "age": 78,
-  "score": 78
+  "name": "自己创建的学生-已修改",
+  "age": 21,
+  "score": 90
 }
 
-### 查询学生
-GET http://localhost:8080/students/200
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTkyMjMsImV4cCI6MTc4MjU0NTYyM30.5BYcEuBwfc5lp7yuuJno8XX1ICypwYkobPxmmZiWTd4
+### 当前用户删除自己创建的学生，应成功
+DELETE http://localhost:8080/students/300
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjMwNjMsImV4cCI6MTc4MjU0OTQ2M30.3FOn5UIinrU3B7khQEZXhy1lYd7jySbghxcyENYMi2Q
 
-### 查询当前用户创建的学生
-GET http://localhost:8080/students/my
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTkyMjMsImV4cCI6MTc4MjU0NTYyM30.5BYcEuBwfc5lp7yuuJno8XX1ICypwYkobPxmmZiWTd4
+### 当前用户修改别人创建的学生，应返回：无权限操作该学生
+PUT http://localhost:8080/students/7
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjMwNjMsImV4cCI6MTc4MjU0OTQ2M30.3FOn5UIinrU3B7khQEZXhy1lYd7jySbghxcyENYMi2Q
+
+{
+  "name": "尝试修改别人创建的学生",
+  "age": 22,
+  "score": 91
+}
+
+### 当前用户删除别人创建的学生，应返回：无权限操作该学生
+DELETE http://localhost:8080/students/7
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjMwNjMsImV4cCI6MTc4MjU0OTQ2M30.3FOn5UIinrU3B7khQEZXhy1lYd7jySbghxcyENYMi2Q

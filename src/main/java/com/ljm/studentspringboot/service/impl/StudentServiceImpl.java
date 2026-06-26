@@ -35,6 +35,20 @@ public class StudentServiceImpl implements StudentService {
                 .toList();
     }
 
+    private Student checkStudentOwner(String id) {
+        Student student = studentMapper.findById(id);
+        if (student == null) {
+            throw new BusinessException("学生不存在");
+        }
+
+        Long currentUserId = UserContext.getUserId();
+        if (student.getCreateUserId() == null || !student.getCreateUserId().equals(currentUserId)) {
+            throw new BusinessException("无权限操作该学生");
+        }
+
+        return student;
+    }
+
     public StudentServiceImpl(StudentMapper studentMapper) {
         this.studentMapper = studentMapper;
     }
@@ -68,10 +82,12 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     @Override
     public void deleteStudent(String id) {
+        checkStudentOwner(id);
+
         int rows = studentMapper.deleteStudent(id);
 
         if (rows <= 0) {
-            throw new BusinessException("删除失败，学生不存在");
+            throw new BusinessException("学生不存在");
         }
     }
 
@@ -111,6 +127,8 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     @Override
     public void updateStudent(String id, StudentUpdateDTO studentUpdateDTO) {
+        checkStudentOwner(id);
+
         Student student = new Student();
 
         student.setId(id);
@@ -121,7 +139,7 @@ public class StudentServiceImpl implements StudentService {
         int rows = studentMapper.updateStudent(student);
 
         if (rows <= 0) {
-            throw new BusinessException("修改失败，学生不存在");
+            throw new BusinessException("学生不存在");
         }
     }
 
