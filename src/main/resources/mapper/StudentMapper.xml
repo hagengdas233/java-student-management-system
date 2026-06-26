@@ -21,6 +21,15 @@
         where id = #{id}
     </select>
 
+    <select id="findByCreateUserId" resultType="Student">
+        select id, name, age, score,
+               create_user_id as createUserId,
+               create_username as createUsername
+        from student
+        where create_user_id = #{createUserId}
+        order by cast(id as unsigned)
+    </select>
+
     <select id="countByCondition" resultType="long">
         select count(*)
         from student

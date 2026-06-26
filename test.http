@@ -10,16 +10,19 @@ Content-Type: application/json
 ### 带 token 添加学生
 POST http://localhost:8080/students
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTc1NjMsImV4cCI6MTc4MjU0Mzk2M30.UN9p3SVt6SpPGKg8IfDM4vYXez2VJTccxxWdYRjlM9E
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTkyMjMsImV4cCI6MTc4MjU0NTYyM30.5BYcEuBwfc5lp7yuuJno8XX1ICypwYkobPxmmZiWTd4
 
 {
-  "id": "200",
-  "name": "创建人测试",
-  "age": 20,
-  "score": 88
+  "id": "300",
+  "name": "创建人测试2",
+  "age": 78,
+  "score": 78
 }
 
 ### 查询学生
 GET http://localhost:8080/students/200
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTc1NjMsImV4cCI6MTc4MjU0Mzk2M30.UN9p3SVt6SpPGKg8IfDM4vYXez2VJTccxxWdYRjlM9E
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTkyMjMsImV4cCI6MTc4MjU0NTYyM30.5BYcEuBwfc5lp7yuuJno8XX1ICypwYkobPxmmZiWTd4
 
+### 查询当前用户创建的学生
+GET http://localhost:8080/students/my
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NTkyMjMsImV4cCI6MTc4MjU0NTYyM30.5BYcEuBwfc5lp7yuuJno8XX1ICypwYkobPxmmZiWTd4

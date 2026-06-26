@@ -31,6 +31,12 @@ public class StudentController {
         return Result.success(studentService.findAll());
     }
 
+    @Operation(summary = "查询当前用户创建的学生")
+    @GetMapping("/students/my")
+    public Result<List<StudentVO>> getMyStudents() {
+        return Result.success(studentService.findMyStudents());
+    }
+
     @Operation(summary = "根据ID查询学生")
     @GetMapping("/students/{id}")
     public Result<StudentVO> getStudentById(

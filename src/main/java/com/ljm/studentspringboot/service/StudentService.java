@@ -12,6 +12,8 @@ public interface StudentService {
 
     List<StudentVO> findAll();
 
+    List<StudentVO> findMyStudents();
+
     StudentVO findById(String id);
 
     void deleteStudent(String id);

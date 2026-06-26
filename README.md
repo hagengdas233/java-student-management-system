@@ -45,6 +45,7 @@
 - UserContext 保存当前请求用户信息
 - 添加学生时自动记录创建人
 - 查询学生时返回创建人信息
+- 查询当前用户创建的学生
 
 ## 项目结构
 
@@ -74,6 +75,7 @@ src/main/java/com/ljm/studentspringboot
 - `/users/me` 当前登录用户查询接口
 - 添加学生时自动记录创建人
 - 查询学生时返回 `createUserId` 和 `createUsername`
+- `GET /students/my` 查询当前用户创建的学生
 - 使用 `Authorization: Bearer token字符串` 访问受保护接口
 - 学生接口 `/students/**` 需要登录后携带 token 才能访问
 - `/users/register` 和 `/users/login` 放行
@@ -84,6 +86,7 @@ src/main/java/com/ljm/studentspringboot
 - `POST /users/login` 用户登录
 - `GET /users/me` 查询当前登录用户，需要携带 token
 - `GET /students` 查询全部学生，需要携带 token
+- `GET /students/my` 查询当前用户创建的学生，需要携带 token
 - `GET /students/{id}` 根据学号查询学生，需要携带 token
 - `GET /students/page/query` 条件分页查询学生，需要携带 token
 - `POST /students` 添加学生，需要携带 token，后端会自动记录创建人
@@ -110,6 +113,7 @@ Authorization: Bearer token字符串
 - `JwtInterceptor` 负责校验 token 是否有效。
 - token 校验通过后，`JwtInterceptor` 会将 `userId`、`username` 保存到 `UserContext`。
 - `StudentServiceImpl` 添加学生时从 `UserContext` 读取当前登录用户，并写入学生创建人字段。
+- 查询当前用户创建的学生时，后端从 `UserContext` 获取当前登录用户 id，根据 `student.create_user_id` 查询数据。
 - 请求结束后清理 `UserContext`，避免线程复用导致用户信息残留。
 
 ## 请求头示例
@@ -143,6 +147,17 @@ Content-Type: application/json
 - `create_username VARCHAR(50) COMMENT '创建人用户名'`
 
 查询学生时会返回对应的 `createUserId` 和 `createUsername`。
+
+## 查询当前用户创建的学生
+
+`GET /students/my` 用于查询当前登录用户创建的学生。该接口需要携带 token，后端不会接收前端传入的 `createUserId`，而是从 JWT 解析后的 `UserContext` 获取当前登录用户 id，再根据 `student.create_user_id` 查询当前用户创建的学生。
+
+```http
+GET /students/my
+Authorization: Bearer your_token
+```
+
+该接口体现了“数据归属”的概念：学生数据保留创建人信息，查询当前用户创建的数据时由后端根据登录态判断归属。
 
 ## 项目亮点
 

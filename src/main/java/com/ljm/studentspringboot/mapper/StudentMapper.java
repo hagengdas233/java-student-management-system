@@ -12,6 +12,8 @@ public interface StudentMapper {
 
     List<Student> findAll();
 
+    List<Student> findByCreateUserId(Long createUserId);
+
     Student findById(String id);
 
     int addStudent(Student student);

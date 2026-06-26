@@ -48,6 +48,13 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<StudentVO> findMyStudents() {
+        List<Student> students = studentMapper.findByCreateUserId(UserContext.getUserId());
+        return toVOList(students);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public StudentVO findById(String id) {
         Student student = studentMapper.findById(id);
 
