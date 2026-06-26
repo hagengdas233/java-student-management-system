@@ -98,10 +98,23 @@ public class StudentServiceImpl implements StudentService {
             throw new BusinessException("请选择要删除的学生");
         }
 
+        List<Student> students = studentMapper.findByIds(ids);
+        if (students.size() != ids.size()) {
+            throw new BusinessException("部分学生不存在");
+        }
+
+        Long currentUserId = UserContext.getUserId();
+        boolean hasNoPermissionStudent = students.stream()
+                .anyMatch(student -> student.getCreateUserId() == null
+                        || !student.getCreateUserId().equals(currentUserId));
+        if (hasNoPermissionStudent) {
+            throw new BusinessException("无权限操作部分学生");
+        }
+
         int rows = studentMapper.deleteBatch(ids);
 
         if (rows <= 0) {
-            throw new BusinessException("删除失败，学生不存在");
+            throw new BusinessException("批量删除失败");
         }
     }
 

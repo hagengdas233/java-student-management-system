@@ -49,6 +49,10 @@
 - 当前登录用户只能修改自己创建的学生
 - 当前登录用户只能删除自己创建的学生
 - 修改或删除别人创建的学生时返回 `无权限操作该学生`
+- 批量删除学生时进行数据权限校验
+- 当前登录用户只能批量删除自己创建的学生
+- 批量删除时如果包含不存在的学生，返回 `部分学生不存在`
+- 批量删除时如果包含别人创建的学生，返回 `无权限操作部分学生`
 
 ## 项目结构
 
@@ -96,7 +100,7 @@ src/main/java/com/ljm/studentspringboot
 - `POST /students` 添加学生，需要携带 token，后端会自动记录创建人
 - `PUT /students/{id}` 修改学生，需要 token，且只能修改自己创建的学生
 - `DELETE /students/{id}` 删除学生，需要 token，且只能删除自己创建的学生
-- `DELETE /students/batch` 批量删除学生，需要携带 token
+- `DELETE /students/batch` 批量删除学生，需要携带 `Authorization: Bearer token`，且只能删除当前登录用户创建的学生；`ids` 中如果包含不存在的学生，返回 `部分学生不存在`；如果包含其他用户创建的学生，返回 `无权限操作部分学生`
 
 ## 认证说明
 
@@ -122,15 +126,20 @@ Authorization: Bearer token字符串
 
 ## 认证和授权
 
-- 认证：判断用户是否登录，例如是否携带合法的 JWT token。
-- 授权：判断当前用户是否有权限操作某个学生，例如只能修改或删除自己创建的学生。
+- 认证 authentication：判断用户是否登录，例如是否携带合法的 JWT token。
+- 授权 authorization：判断当前用户是否有权限操作某个学生，例如只能修改、删除或批量删除自己创建的学生。
+- `JwtInterceptor` 负责认证。
+- `StudentServiceImpl` 中的修改、删除、批量删除权限判断负责授权。
 
-学生修改和删除的授权逻辑：
+学生修改、删除和批量删除的授权逻辑：
 
 - `JwtInterceptor` 解析 token 后把 `userId`、`username` 保存到 `UserContext`。
 - `StudentServiceImpl` 在修改/删除学生前，会先根据学生 id 查询学生。
 - 判断 `student.createUserId` 是否等于 `UserContext.getUserId()`。
 - 如果不相等，抛出 `BusinessException("无权限操作该学生")`。
+- 批量删除学生时，`StudentServiceImpl` 会先根据 ids 查询学生列表。
+- 如果查询结果数量和 ids 数量不一致，抛出 `BusinessException("部分学生不存在")`。
+- 如果存在不是当前用户创建的学生，抛出 `BusinessException("无权限操作部分学生")`。
 
 ## 请求头示例
 
@@ -175,6 +184,31 @@ Authorization: Bearer your_token
 
 该接口体现了“数据归属”的概念：学生数据保留创建人信息，查询当前用户创建的数据时由后端根据登录态判断归属。
 
+## 批量删除接口示例
+
+```http
+DELETE /students/batch?ids=401&ids=402
+Authorization: Bearer your_token
+```
+
+批量删除错误返回示例：
+
+```json
+{
+  "code": 500,
+  "message": "无权限操作部分学生",
+  "data": null
+}
+```
+
+```json
+{
+  "code": 500,
+  "message": "部分学生不存在",
+  "data": null
+}
+```
+
 ## 项目亮点
 
 - DTO / VO 分层
@@ -190,5 +224,6 @@ Authorization: Bearer your_token
 - JWT + UserContext 当前登录用户识别
 - 添加学生自动记录操作用户
 - 基于 UserContext 实现学生数据权限控制
+- 支持单个修改、单个删除、批量删除的数据权限校验
 - 当前用户只能操作自己创建的数据
 - Swagger 接口文档

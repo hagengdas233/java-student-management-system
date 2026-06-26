@@ -7,33 +7,38 @@ Content-Type: application/json
   "password": "123456"
 }
 
-
-### 当前用户修改自己创建的学生，应成功
-PUT http://localhost:8080/students/300
+### 添加学生 401
+POST http://localhost:8080/students
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjMwNjMsImV4cCI6MTc4MjU0OTQ2M30.3FOn5UIinrU3B7khQEZXhy1lYd7jySbghxcyENYMi2Q
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
 
 {
-  "name": "自己创建的学生-已修改",
+  "id": "401",
+  "name": "批量删除测试1",
+  "age": 20,
+  "score": 88
+}
+
+### 添加学生 402
+POST http://localhost:8080/students
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
+
+{
+  "id": "402",
+  "name": "批量删除测试2",
   "age": 21,
-  "score": 90
+  "score": 89
 }
 
-### 当前用户删除自己创建的学生，应成功
-DELETE http://localhost:8080/students/300
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjMwNjMsImV4cCI6MTc4MjU0OTQ2M30.3FOn5UIinrU3B7khQEZXhy1lYd7jySbghxcyENYMi2Q
+### 批量删除自己创建的学生
+DELETE http://localhost:8080/students/batch?ids=401&ids=402
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
 
-### 当前用户修改别人创建的学生，应返回：无权限操作该学生
-PUT http://localhost:8080/students/7
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjMwNjMsImV4cCI6MTc4MjU0OTQ2M30.3FOn5UIinrU3B7khQEZXhy1lYd7jySbghxcyENYMi2Q
+### 批量删除不存在的学生
+DELETE http://localhost:8080/students/batch?ids=99999&ids=88888
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
 
-{
-  "name": "尝试修改别人创建的学生",
-  "age": 22,
-  "score": 91
-}
-
-### 当前用户删除别人创建的学生，应返回：无权限操作该学生
-DELETE http://localhost:8080/students/7
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjMwNjMsImV4cCI6MTc4MjU0OTQ2M30.3FOn5UIinrU3B7khQEZXhy1lYd7jySbghxcyENYMi2Q
+### 批量删除包含别人创建的学生
+DELETE http://localhost:8080/students/batch?ids=401&ids=1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
