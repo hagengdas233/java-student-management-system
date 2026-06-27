@@ -1,44 +1,47 @@
-### 登录获取 token
-POST http://localhost:8080/users/login
+
+### MyBatis-Plus demo variables
+@baseUrl = http://localhost:8080
+@mpStudentId = 9002
+
+
+### MP selectById
+GET {{baseUrl}}/mp/students/{{mpStudentId}}
+
+
+### MP insert
+POST {{baseUrl}}/mp/students
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "123456"
+  "id": "{{mpStudentId}}",
+  "name": "MP Demo Student",
+  "age": 19,
+  "score": 86
 }
 
-### 添加学生 401
-POST http://localhost:8080/students
+
+### MP updateById
+PUT {{baseUrl}}/mp/students/{{mpStudentId}}
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
 
 {
-  "id": "401",
-  "name": "批量删除测试1",
+  "name": "MP Demo Updated",
   "age": 20,
-  "score": 88
+  "score": 92
 }
 
-### 添加学生 402
-POST http://localhost:8080/students
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
 
-{
-  "id": "402",
-  "name": "批量删除测试2",
-  "age": 21,
-  "score": 89
-}
+### MP LambdaQueryWrapper condition query
+GET {{baseUrl}}/mp/students?name=MP&minScore=80&maxScore=100
 
-### 批量删除自己创建的学生
-DELETE http://localhost:8080/students/batch?ids=401&ids=402
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
 
-### 批量删除不存在的学生
-DELETE http://localhost:8080/students/batch?ids=99999&ids=88888
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
+### MP page query
+GET {{baseUrl}}/mp/students/page?pageNum=1&pageSize=5&name=MP&minScore=80&maxScore=100
 
-### 批量删除包含别人创建的学生
-DELETE http://localhost:8080/students/batch?ids=401&ids=1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
+
+### MP deleteById
+DELETE {{baseUrl}}/mp/students/{{mpStudentId}}
+
+
+### MP selectById after delete, should return 没有该学生
+GET {{baseUrl}}/mp/students/{{mpStudentId}}

@@ -102,6 +102,48 @@ src/main/java/com/ljm/studentspringboot
 - `DELETE /students/{id}` 删除学生，需要 token，且只能删除自己创建的学生
 - `DELETE /students/batch` 批量删除学生，需要携带 `Authorization: Bearer token`，且只能删除当前登录用户创建的学生；`ids` 中如果包含不存在的学生，返回 `部分学生不存在`；如果包含其他用户创建的学生，返回 `无权限操作部分学生`
 
+## MyBatis-Plus 学习演示分支
+
+`mybatis-plus-demo` 分支只用于学习 MyBatis-Plus，不影响原来的 `/students/**` 正式业务接口。
+
+原来的 `/students/**` 接口仍然保留，继续使用原生 MyBatis Mapper + XML SQL，并包含 JWT 鉴权、`UserContext` 当前用户上下文、学生创建人记录和数据权限控制。
+
+新增的 `/mp/students/**` 是 MyBatis-Plus 学习接口，只演示 MyBatis-Plus 的基础 CRUD、条件查询和分页查询，不做 JWT 鉴权和数据权限控制。
+
+本分支新增内容：
+
+- 引入 MyBatis-Plus 依赖：`mybatis-plus-spring-boot4-starter`，并引入分页解析所需的 `mybatis-plus-jsqlparser`
+- `Student` 实体类增加 MyBatis-Plus 注解：`@TableName`、`@TableId`、`@TableField`
+- 新增 `StudentPlusMapper`，继承 `BaseMapper<Student>`，不编写 XML
+- 新增 `StudentPlusController`，统一提供 `/mp/students/**` 学习接口
+- 新增 `MyBatisPlusConfig`，配置 MyBatis-Plus 分页插件
+- 在 `test.http` 中补充 MyBatis-Plus 测试用例
+
+### MyBatis-Plus 学习接口
+
+- `GET /mp/students/{id}`：根据 id 查询学生，使用 `selectById`
+- `POST /mp/students`：新增学生，使用 `insert`
+- `PUT /mp/students/{id}`：修改学生，使用 `LambdaUpdateWrapper`
+- `DELETE /mp/students/{id}`：删除学生，使用 `deleteById`
+- `GET /mp/students`：条件查询，使用 `LambdaQueryWrapper`
+- `GET /mp/students/page`：分页查询，使用 `Page + selectPage`
+
+### MyBatis-Plus 知识点
+
+- `BaseMapper`：MyBatis-Plus 提供的基础 CRUD Mapper，继承后可直接使用 `insert`、`selectById`、`update`、`deleteById`、`selectPage` 等方法。
+- `@TableName`：指定实体类对应的数据库表，例如 `@TableName("student")`。
+- `@TableId`：指定主键字段，例如学生表的 `id`。
+- `@TableField`：指定 Java 字段和数据库字段的映射关系，例如 `createUserId` 对应 `create_user_id`。
+- `LambdaQueryWrapper`：用 Java 代码构建查询条件，类似动态 SQL，适合处理姓名模糊查询、成绩范围查询等常见条件。
+- `LambdaUpdateWrapper`：用 Java 代码构建更新条件和更新字段，本分支中用于按 id 修改学生信息。
+- `Page + selectPage`：MyBatis-Plus 的分页查询方式，`Page` 封装页码和每页数量，`selectPage` 返回总数和当前页记录。
+
+### MyBatis 和 MyBatis-Plus 的区别
+
+- MyBatis 需要手写 Mapper 方法和 XML SQL，适合精确控制复杂 SQL。
+- MyBatis-Plus 是 MyBatis 的增强工具，适合简化基础 CRUD 和常见条件查询。
+- 复杂 SQL 仍然可以继续使用 MyBatis XML 手写，不需要为了使用 MyBatis-Plus 而删除原来的 XML。
+
 ## 认证说明
 
 登录成功后会返回 token，访问学生相关接口时需要在请求头中携带：
