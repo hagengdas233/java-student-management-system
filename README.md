@@ -88,6 +88,20 @@ src/main/java/com/ljm/studentspringboot
 - 学生接口 `/students/**` 需要登录后携带 token 才能访问
 - `/users/register` 和 `/users/login` 放行
 
+## redis-demo 分支说明
+
+当前分支为 `redis-demo`，本分支在 `auth-version` 的基础上新增 Redis 学生详情缓存。
+
+- 缓存 key：`student:detail:{id}`，例如 `student:detail:903`
+- 查询学生详情 `GET /students/{id}` 时，后端会先查询 Redis
+- Redis 命中时，直接把缓存中的 JSON 转成 `StudentVO` 返回
+- Redis 未命中时，再查询 MySQL，查到学生后写入 Redis，并设置 10 分钟过期时间
+- 修改学生 `PUT /students/{id}` 成功后，会删除该学生的 Redis 缓存
+- 删除学生 `DELETE /students/{id}` 成功后，会删除该学生的 Redis 缓存
+- 批量删除学生成功后，会遍历 ids 删除对应的 `student:detail:{id}` 缓存
+- 这是基础缓存模式，用于减少学生详情查询对数据库的访问压力
+- Redis 只是缓存，MySQL 仍然是主数据库和最终数据来源
+
 ## 主要接口
 
 - `POST /users/register` 用户注册

@@ -1,22 +1,39 @@
 package com.ljm.studentspringboot.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ljm.studentspringboot.dto.StudentAddDTO;
 import com.ljm.studentspringboot.dto.StudentQueryDTO;
 import com.ljm.studentspringboot.dto.StudentUpdateDTO;
+import com.ljm.studentspringboot.entity.PageResult;
 import com.ljm.studentspringboot.entity.Student;
+import com.ljm.studentspringboot.exception.BusinessException;
 import com.ljm.studentspringboot.mapper.StudentMapper;
 import com.ljm.studentspringboot.service.StudentService;
 import com.ljm.studentspringboot.util.UserContext;
 import com.ljm.studentspringboot.vo.StudentVO;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
-import com.ljm.studentspringboot.exception.BusinessException;import com.ljm.studentspringboot.entity.PageResult;import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentServiceImpl implements StudentService {
 
+    private static final String STUDENT_DETAIL_CACHE_PREFIX = "student:detail:";
+    private static final long STUDENT_DETAIL_CACHE_TTL_MINUTES = 10;
+
     private final StudentMapper studentMapper;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public StudentServiceImpl(StudentMapper studentMapper,
+                              StringRedisTemplate stringRedisTemplate) {
+        this.studentMapper = studentMapper;
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     private StudentVO toVO(Student student) {
         StudentVO vo = new StudentVO();
@@ -49,8 +66,8 @@ public class StudentServiceImpl implements StudentService {
         return student;
     }
 
-    public StudentServiceImpl(StudentMapper studentMapper) {
-        this.studentMapper = studentMapper;
+    private String buildStudentDetailCacheKey(String id) {
+        return STUDENT_DETAIL_CACHE_PREFIX + id;
     }
 
     @Override
@@ -70,13 +87,37 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional(readOnly = true)
     public StudentVO findById(String id) {
+        String cacheKey = buildStudentDetailCacheKey(id);
+        String cacheJson = stringRedisTemplate.opsForValue().get(cacheKey);
+        if (cacheJson != null) {
+            System.out.println("Redis 缓存命中: " + cacheKey);
+            try {
+                return objectMapper.readValue(cacheJson, StudentVO.class);
+            } catch (JsonProcessingException e) {
+                stringRedisTemplate.delete(cacheKey);
+            }
+        }
+
+        System.out.println("Redis 缓存未命中，查询数据库: " + cacheKey);
         Student student = studentMapper.findById(id);
 
         if (student == null) {
             throw new BusinessException("学生不存在");
         }
 
-        return toVO(student);
+        StudentVO studentVO = toVO(student);
+        try {
+            String studentJson = objectMapper.writeValueAsString(studentVO);
+            stringRedisTemplate.opsForValue().set(
+                    cacheKey,
+                    studentJson,
+                    Duration.ofMinutes(STUDENT_DETAIL_CACHE_TTL_MINUTES)
+            );
+        } catch (JsonProcessingException e) {
+            throw new BusinessException("学生缓存写入失败");
+        }
+
+        return studentVO;
     }
 
     @Transactional
@@ -89,6 +130,8 @@ public class StudentServiceImpl implements StudentService {
         if (rows <= 0) {
             throw new BusinessException("学生不存在");
         }
+
+        stringRedisTemplate.delete(buildStudentDetailCacheKey(id));
     }
 
     @Transactional
@@ -116,6 +159,8 @@ public class StudentServiceImpl implements StudentService {
         if (rows <= 0) {
             throw new BusinessException("批量删除失败");
         }
+
+        ids.forEach(studentId -> stringRedisTemplate.delete(buildStudentDetailCacheKey(studentId)));
     }
 
     @Transactional
@@ -154,6 +199,8 @@ public class StudentServiceImpl implements StudentService {
         if (rows <= 0) {
             throw new BusinessException("学生不存在");
         }
+
+        stringRedisTemplate.delete(buildStudentDetailCacheKey(id));
     }
 
     @Override

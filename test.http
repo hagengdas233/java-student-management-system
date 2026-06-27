@@ -1,4 +1,5 @@
 ### 登录获取 token
+# @name login
 POST http://localhost:8080/users/login
 Content-Type: application/json
 
@@ -7,10 +8,14 @@ Content-Type: application/json
   "password": "123456"
 }
 
+> {%
+    client.global.set("redisToken", response.body.data.token);
+%}
+
 ### 添加学生 401
 POST http://localhost:8080/students
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
+Authorization: Bearer {{redisToken}}
 
 {
   "id": "401",
@@ -22,7 +27,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRta
 ### 添加学生 402
 POST http://localhost:8080/students
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
+Authorization: Bearer {{redisToken}}
 
 {
   "id": "402",
@@ -33,12 +38,70 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRta
 
 ### 批量删除自己创建的学生
 DELETE http://localhost:8080/students/batch?ids=401&ids=402
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
+Authorization: Bearer {{redisToken}}
 
 ### 批量删除不存在的学生
 DELETE http://localhost:8080/students/batch?ids=99999&ids=88888
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
+Authorization: Bearer {{redisToken}}
 
 ### 批量删除包含别人创建的学生
 DELETE http://localhost:8080/students/batch?ids=401&ids=1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3ODI0NjQyODIsImV4cCI6MTc4MjU1MDY4Mn0.ztGX3r-Mj9b1m_qiiA6M4bOATh1v-UwpP_torOyny4E
+Authorization: Bearer {{redisToken}}
+
+### Redis 缓存测试 - 登录获取 token
+# @name redisLogin
+POST http://localhost:8080/users/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "123456"
+}
+
+> {%
+    client.global.set("redisToken", response.body.data.token);
+%}
+
+### Redis 缓存测试 - 添加学生
+# 如果 903 已经被删除，重新执行添加学生接口；如果 903 已存在，不要重复添加，可以换一个 id 测试。
+POST http://localhost:8080/students
+Content-Type: application/json
+Authorization: Bearer {{redisToken}}
+
+{
+  "id": "903",
+  "name": "Redis缓存测试",
+  "age": 20,
+  "score": 88
+}
+
+### Redis 缓存测试 - 第一次查询学生详情，预期未命中 Redis 并查询数据库
+GET http://localhost:8080/students/903
+Authorization: Bearer {{redisToken}}
+
+### Redis 缓存测试 - 第二次查询同一个学生，预期命中 Redis
+GET http://localhost:8080/students/903
+Authorization: Bearer {{redisToken}}
+
+### Redis 缓存测试 - 修改学生，预期删除 Redis 缓存
+PUT http://localhost:8080/students/903
+Content-Type: application/json
+Authorization: Bearer {{redisToken}}
+
+{
+  "name": "Redis缓存测试-已修改",
+  "age": 21,
+  "score": 95
+}
+
+### Redis 缓存测试 - 修改后再次查询，预期未命中 Redis，返回新数据并重新写入缓存
+GET http://localhost:8080/students/903
+Authorization: Bearer {{redisToken}}
+
+### Redis 缓存测试 - 删除学生，预期删除 Redis 缓存
+DELETE http://localhost:8080/students/903
+Authorization: Bearer {{redisToken}}
+
+### Redis 缓存测试 - 删除后再次查询，预期返回学生不存在
+GET http://localhost:8080/students/903
+Authorization: Bearer {{redisToken}}
