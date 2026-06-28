@@ -223,6 +223,27 @@ Authorization: Bearer your_token
 }
 ```
 
+## MySQL 进阶学习
+
+本阶段补充了 MySQL 索引和事务相关学习材料，主要用于配合 MySQL Workbench 做 explain、索引、事务隔离级别、MVCC 和锁实验。
+
+学习文档：
+
+- MySQL 索引与 explain 学习文档：`docs/MYSQL_INDEX_REVIEW.md`
+- MySQL 事务与隔离级别学习文档：`docs/MYSQL_TRANSACTION_REVIEW.md`
+- 索引练习 SQL：`src/main/resources/sql/mysql_index_practice.sql`
+- 事务练习 SQL：`src/main/resources/sql/mysql_transaction_practice.sql`
+
+本阶段学习内容：
+
+- 索引是什么，以及为什么索引能提升查询效率。
+- `explain` 执行计划，重点观察 `type`、`possible_keys`、`key`、`rows`、`Extra`。
+- 主键索引、普通索引、范围查询索引，以及 `student.id`、`create_user_id`、`score` 的索引练习。
+- `READ COMMITTED` 和不可重复读实验。
+- `REPEATABLE READ` 和一致性快照实验。
+- MVCC、快照读、当前读的基本理解。
+- `SELECT ... FOR UPDATE` 当前读加锁和阻塞实验。
+
 ## 项目亮点
 
 - DTO / VO 分层
